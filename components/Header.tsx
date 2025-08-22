@@ -31,7 +31,7 @@ function Header() {
         </SignedIn>
 
         <SignedOut>
-          <SignInButton mode="modal"> {/*Make the sign in form a pop up*/}
+          <SignInButton mode="modal"> 
             <Button>Login</Button>
           </SignInButton>
         </SignedOut>
