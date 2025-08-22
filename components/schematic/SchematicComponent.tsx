@@ -2,6 +2,7 @@ import { getTemporaryAccessToken } from '@/actions/getTemporaryAccessToken';
 import React from 'react'
 import SchematicEmbed from './SchematicEmbed';
 
+
 async function SchematicComponent({ componentId }: { componentId?: string }) {
     if (!componentId){
         return null;

@@ -31,8 +31,9 @@ const SchematicWrapped = ({ children }: { children: React.ReactNode }) => {
             keys: {
               id: user.id,
             },
-          }
-        })
+            name: userName,
+          },
+        });
       }
   }, [user, identify])
 

@@ -9,7 +9,8 @@ function SchematicEmbed({
     accessToken: string;
     componentId: string;
 }){
-    return <SchematicEmbedComponent accessToken={accessToken} id={componentId} />;
+    return
+        <SchematicEmbedComponent accessToken={accessToken} id={componentId} />;
 }
 
 export default SchematicEmbed;

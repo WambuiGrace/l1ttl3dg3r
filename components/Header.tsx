@@ -17,7 +17,8 @@ function Header() {
         <Shield className="w-6 h-6 text-green-600 mr-2"/>
         <h1 className="text-xl font-semibold">L1ttl3dg3r</h1> 
       </Link>
-
+      
+      {/* Signed in and signed out components from clerk */}
       <div className="flex items-center space-x-4">
         <SignedIn>
           <Link href="/receipts">
@@ -30,7 +31,7 @@ function Header() {
         </SignedIn>
 
         <SignedOut>
-          <SignInButton mode="modal">
+          <SignInButton mode="modal"> {/*Make the sign in form a pop up*/}
             <Button>Login</Button>
           </SignInButton>
         </SignedOut>
