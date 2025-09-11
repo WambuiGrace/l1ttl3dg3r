@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useSchematicEntitlement, useSchematicFlag } from '@schematichq/schematic-react';
 import { convertLegacyOtlpGrpcOptions } from "@opentelemetry/otlp-grpc-exporter-base";
 import { uploadPDF } from '@/actions/uploadPDF';
+import { AlertCircle, CheckCircle, CloudUpload } from 'lucide-react';
 
 
 function PDFDropzone() {
@@ -100,11 +101,25 @@ function PDFDropzone() {
         }
     }, [user, handleUpload]);
 
-    //const canUpload = isUserSignedIn && isFeatureEnabled;
-    const canUpload = true; //Mock info
+    const handleFileInputChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files?.length) {
+          handleUpload(e.target.files);
+        }
+      },
+      [handleUpload],
+    )
+
+    const triggerFileInput = useCallback(() => {
+      fileInputRef.current?.click();
+    }, []);
+
+    //const canUpload = true; //Mock info
+    const isUserSignedIn = !!user;
+    const canUpload = isUserSignedIn && isFeatureEnabled;
 
   return <DndContext sensors={sensors}>
-    <div className="w-full max-w-md mx-auto bg-red-400">
+    <div className="w-full max-w-md mx-auto">
         <div 
             onDragOver={canUpload ? handleDragOver : undefined}
             onDragLeave={canUpload ? handleDragLeave : undefined}
@@ -113,8 +128,67 @@ function PDFDropzone() {
                 isDraggingOver ? "border-green-500 bg-green-50" : "border-gray-300"}
                 ${!canUpload ? "opacity-70 cursor-not-allowed" : ""}`}
         >
-
+          {isUploading ? (
+            <div className='flex flex-col items-center'>
+              <div className='animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-500 mb-2'>      
+              </div>
+              <p>Uploading...</p>
+            </div>
+          ) : !isUserSignedIn ?(
+            <>
+              <CloudUpload className='mx-auto h-12 w-12 text-gray-400' />
+              <p className="mt-2 text-sm text-gray-600">
+                Please sign in to upload files
+              </p>
+            </>
+          ) : (
+            <>
+              <CloudUpload className='mx-auto h-12 w-12 text-gray-400' />
+              <p className='mt-2 text-sm text-gray-600'>
+                Drag and drop PDF files here or click to select files
+              </p>
+              <input 
+                type="file"
+                ref={fileInputRef}
+                accept='application/pdf, .pdf'
+                multiple
+                onChange={handleFileInputChange}
+                className='hidden'
+              />
+              <button 
+                className='mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                disabled={!isFeatureEnabled}
+                onClick={triggerFileInput}
+              >
+                {isFeatureEnabled ? "Select files" : "Upgrade to upload"}
+              </button>
+            </>
+          )}
         </div>
+        <div className='mt-4'>
+            {featureUsageExceeded && (
+              <div className='flex items-center p-3 bg-red-50 border border-red-200 rounded-md text-red-600'>
+                <AlertCircle className='h-5 w-5 mr-2 flex-shrink-0' />
+                <span>
+                  You have exceeded your limit of {featureAllocation} scans.
+                  Please upgrade to continue.
+                </span>
+              </div>
+            )}
+        </div>
+          {uploadedFiles.length > 0 && (
+            <div className='mt-4'>
+              <h3 className='font-medium'>Uploaded files:</h3>
+              <ul className='mt-2 text-sm text-gray-600 space-y-1'>
+                {uploadedFiles.map((fileName, i) => (
+                  <li key={i} className='flex items-center'>
+                    <CheckCircle className='h-5 w-5 text-green-500 mr-2' />
+                    {fileName}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
     </div>
   </DndContext>
 }
