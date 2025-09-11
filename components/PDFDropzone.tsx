@@ -14,7 +14,7 @@ function PDFDropzone() {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const { user } = useUser();  
-    const { router } = useRouter();
+    const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const {
         value: isFeatureEnabled,
@@ -96,7 +96,7 @@ function PDFDropzone() {
           return;
         }
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0){
-          handleUpload[e.dataTransfer.files];
+          handleUpload(e.dataTransfer.files);
         }
     }, [user, handleUpload]);
 
