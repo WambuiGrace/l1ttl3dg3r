@@ -5,6 +5,8 @@ import { DndContext, useSensor, useSensors, PointerSensor } from "@dnd-kit/core"
 import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation";
 import { useSchematicEntitlement, useSchematicFlag } from '@schematichq/schematic-react';
+import { convertLegacyOtlpGrpcOptions } from "@opentelemetry/otlp-grpc-exporter-base";
+import { uploadPDF } from '@/actions/uploadPDF';
 
 
 function PDFDropzone() {
@@ -21,12 +23,58 @@ function PDFDropzone() {
         featureAllocation,
     } = useSchematicEntitlement("scans");
 
-    // console.log(isFeatureEnabled)
-    // console.log("Feature usage", featureUsageExceeded)
-    // console.log("Feature allocation", featureAllocation)
-
     //Setup up sensors to detect drag
     const sensors = useSensors(useSensor(PointerSensor));
+    const handleUpload = useCallback(async(files: fileList | File[]) => {
+      if (!user){
+        alert("Please sign in to upload files.");
+        return;
+      }
+      const fileArray = Array.from(files);
+      const pdfFiles = fileArray.filter(
+        (file) =>
+          file.type === "application/pdf" ||
+          file.name.toLowerCase().endsWith(".pdf"),
+      );
+
+      if (pdfFiles.length === 0){
+        alert("Please drop only PDF files");
+        return;
+      }
+
+      setIsUploading(true);
+      try {
+        // Upload files
+        const newUploadedFiles: string [] = [];
+        for (const file of pdfFiles) {
+          //Create a formdata object to use with server action
+          const formData = new FormData();
+          formData.append("file", file);
+
+          //Call the server action to handle the upload
+          const result = await uploadPDF(formData);
+
+          if (!result.success) {
+            throw new Error(result.error);
+          }
+          newUploadedFiles.push(file.name);
+        }
+
+        setUploadedFiles((prev) => [...prev, ...newUploadedFiles]);
+
+        //Clear uploaded files list after 5 seconds
+        setTimeout(() => {
+          setUploadedFiles([]);
+        }, 5000);
+
+        router.push("/receipts");
+      } catch (error) {
+        console.error("Upload failed: ", error);
+        alert(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      } finally {
+        setIsUploading(false);
+      }
+    }, [user, router])
 
     //Handle file drop via native browser events for better PDF support
     const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -42,8 +90,15 @@ function PDFDropzone() {
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDraggingOver(false);
-        console.log("Dropped")
-    }, []);
+
+        if (!user){
+          alert("Please sign in to upload files.");
+          return;
+        }
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0){
+          handleUpload[e.dataTransfer.files];
+        }
+    }, [user, handleUpload]);
 
     //const canUpload = isUserSignedIn && isFeatureEnabled;
     const canUpload = true; //Mock info

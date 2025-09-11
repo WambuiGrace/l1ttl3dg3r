@@ -218,7 +218,7 @@ export default function Home() {
               </ul>
               <div className="mt-6">
                 <Link href="/manage-plan">
-                  <Button className="w-full bg-green-600 hover:bg-blue-700" variant="outline">
+                  <Button className="w-full bg-green-600 hover:bg-green-700" variant="outline">
                     Get started
                   </Button>
                 </Link>
